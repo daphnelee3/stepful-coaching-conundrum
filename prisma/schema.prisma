@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  firstName   String
+  lastName    String
+  role        UserRole
+  phoneNumber String    @unique
+  slots       Slot[]    @relation("CoachSlots")       // A coach can have multiple slots
+  bookings    Booking[] @relation("StudentBookings")  // A student can have multiple bookings
+}
+
+model Slot {
+  id        Int       @id @default(autoincrement())
+  coachId   Int
+  startTime DateTime
+  duration  Int       @default(120)
+  isBooked  Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  coach     User      @relation("CoachSlots", fields: [coachId], references: [id])  // Coach for this slot
+  booking   Booking?  @relation("SlotBooking")  // One booking per slot
+}
+
+model Booking {
+  id        Int           @id @default(autoincrement())
+  slotId    Int           @unique  // Mark as unique to ensure one booking per slot
+  studentId Int
+  status    BookingStatus @default(ACTIVE)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  slot      Slot          @relation("SlotBooking", fields: [slotId], references: [id])  // Link to the booked slot
+  student   User          @relation("StudentBookings", fields: [studentId], references: [id])  // Student who booked the slot
+  review    Review?       @relation("BookingReview")
+}
+
+model Review {
+  id                Int      @id @default(autoincrement())
+  bookingId         Int      @unique
+  satisfactionScore Int
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  booking           Booking  @relation("BookingReview", fields: [bookingId], references: [id])  // Link to the booking being reviewed
+}
+
+enum UserRole {
+  COACH
+  STUDENT
+}
+
+enum BookingStatus {
+  ACTIVE
+  CANCELED
+  COMPLETED
+}
+
+
