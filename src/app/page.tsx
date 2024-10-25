@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function Home() {
   return (
@@ -8,12 +9,16 @@ export default function Home() {
       </h1>
       <div className="text-lg py-8">I am a:</div>
       <div className="flex justify-center gap-6">
-        <Button className="bg-teal-500 hover:bg-teal-700 min-w-[120px]">
-          Coach
-        </Button>
-        <Button className="bg-sky-500 hover:bg-sky-700 min-w-[120px]">
-          Student
-        </Button>
+        <Link href="/coach">
+          <Button className="bg-teal-500 hover:bg-teal-700 min-w-[120px]">
+            Coach
+          </Button>
+        </Link>
+        <Link href="/student">
+          <Button className="bg-sky-500 hover:bg-sky-700 min-w-[120px]">
+            Student
+          </Button>
+        </Link>
       </div>
     </div>
   );
