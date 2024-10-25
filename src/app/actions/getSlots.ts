@@ -10,6 +10,14 @@ async function getSlots(coachId: number) {
         gte: new Date(),
       },
     },
+    include: {
+      coach: { select: { id: true, phoneNumber: true } },
+      booking: {
+        include: {
+          student: { select: { id: true, phoneNumber: true } },
+        },
+      },
+    },
     orderBy: {
       startTime: 'asc',
     },

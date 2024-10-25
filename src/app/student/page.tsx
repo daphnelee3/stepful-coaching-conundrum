@@ -6,8 +6,13 @@ const StudentDashboard = async () => {
   const coachId = 1;
   const studentId = 2;
   const student = await prisma.user.findUnique({
-    where: { id: studentId, role: 'STUDENT' },
+    where: { id: studentId },
+    select: { id: true, firstName: true, phoneNumber: true, role: true },
   });
+  if (!student) {
+    throw new Error('User is null');
+  }
+
   const slots = await getSlots(coachId);
   const slotList = slots.map((slot) => ({
     ...slot,
@@ -20,7 +25,7 @@ const StudentDashboard = async () => {
       <p className="text-lg">Welcome {student?.firstName}</p>
       <div className="space-y-8">
         <div>Book time with a coach!</div>
-        <SlotList slots={slotList} userRole={'student'} />
+        <SlotList slots={slotList} user={student} />
       </div>
     </div>
   );

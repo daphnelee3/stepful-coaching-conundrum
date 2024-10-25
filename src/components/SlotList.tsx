@@ -1,7 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import bookSlot from '@/app/actions/bookSlot';
 import { toast } from 'react-toastify';
+
+type User = {
+  id: number;
+  phoneNumber: string;
+  role: 'COACH' | 'STUDENT';
+};
 
 type Slot = {
   id: number;
@@ -12,14 +19,25 @@ type Slot = {
 
 type SlotListProps = {
   slots: Slot[];
-  userRole: 'coach' | 'student';
+  user: User;
 };
 
-const SlotList = ({ slots, userRole }: SlotListProps) => {
+const SlotList = ({ slots: initialSlots, user }: SlotListProps) => {
+  const [slots, setSlots] = useState(initialSlots);
+
   const handleBookSlot = async (slotId: number) => {
     try {
       const studentId = 2;
-      await bookSlot(slotId, studentId);
+      const updatedSlot = await bookSlot(slotId, studentId);
+
+      setSlots((prevSlots) =>
+        prevSlots.map((slot) =>
+          slot.id === slotId
+            ? { ...slot, ...updatedSlot, isBooked: true }
+            : slot
+        )
+      );
+
       toast.success('Slot booked successfully');
     } catch (error) {
       console.error('Failed to book slot:', error);
@@ -36,7 +54,19 @@ const SlotList = ({ slots, userRole }: SlotListProps) => {
             <p>Start Time: {new Date(slot.startTime).toLocaleString()}</p>
             <p>Duration: {slot.duration} minutes</p>
             <p>Status: {slot.isBooked ? 'Booked' : 'Available'}</p>
-            {userRole === 'student' && !slot.isBooked && (
+
+            {slot.isBooked && (
+              <div className="mt-2">
+                {user.role === 'COACH' && user.phoneNumber && (
+                  <p>Student Phone: {user.phoneNumber}</p>
+                )}
+                {user.role === 'STUDENT' && user.phoneNumber && (
+                  <p>Coach Phone: {user.phoneNumber}</p>
+                )}
+              </div>
+            )}
+
+            {user.role === 'STUDENT' && !slot.isBooked && (
               <button
                 className="mt-2 bg-blue-500 text-white py-2 px-4 rounded"
                 onClick={() => handleBookSlot(slot.id)}

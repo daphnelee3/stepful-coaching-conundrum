@@ -7,8 +7,14 @@ import prisma from '@/lib/db';
 const CoachDashboard = async () => {
   const coachId = 1;
   const coach = await prisma.user.findUnique({
-    where: { id: coachId, role: 'COACH' },
+    where: { id: coachId },
+    select: { id: true, firstName: true, phoneNumber: true, role: true },
   });
+
+  if (!coach) {
+    throw new Error('User is null');
+  }
+
   const slots = await getSlots(coachId);
   const slotList = slots.map((slot) => ({
     ...slot,
@@ -21,7 +27,7 @@ const CoachDashboard = async () => {
       <p className="text-lg">Welcome {coach?.firstName}</p>
       <div className="space-y-8">
         <AddSlot />
-        <SlotList slots={slotList} userRole={'coach'} />
+        <SlotList slots={slotList} user={coach} />
       </div>
     </div>
   );
