@@ -1,12 +1,19 @@
 import AddSlot from '@/components/AddSlot';
 import SlotList from '@/components/SlotList';
+import getSlots from '@/app/actions/getSlots';
+
 import prisma from '@/lib/db';
 
 const CoachDashboard = async () => {
   const coachId = 1;
   const coach = await prisma.user.findUnique({
-    where: { id: coachId },
+    where: { id: coachId, role: 'COACH' },
   });
+  const slots = await getSlots(coachId);
+  const slotList = slots.map((slot) => ({
+    ...slot,
+    startTime: slot.startTime.toISOString(),
+  }));
 
   return (
     <div className="container mx-auto p-16">
@@ -14,7 +21,7 @@ const CoachDashboard = async () => {
       <p className="text-lg">Welcome {coach?.firstName}</p>
       <div className="space-y-8">
         <AddSlot />
-        <SlotList />
+        <SlotList slots={slotList} userRole={'coach'} />
       </div>
     </div>
   );
